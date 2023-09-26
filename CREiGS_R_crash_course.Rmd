@@ -337,7 +337,9 @@ allele frequency of B.
 
 ## Revisiting linear regression
 
+Now we will be reviewing the R code used in last week's linear regression module. We will be using `ggplot2` for prettier plots and reading two data files provided alongside this code. Make sure to install the appropriate packages and modify the file paths before running the following code!
 
+### Infant Height and Age
 ```{r}
 # Check if ggplot2 is already installed
 if (!require(ggplot2, quietly = TRUE)) {
@@ -352,17 +354,26 @@ if (!require(ggplot2, quietly = TRUE)) {
 }
 ```
 
+#### Simple linear regression
 ```{r}
-ageandheight <- read.csv("~/../Desktop/creigs_ta/ageandheight.csv") #Upload the data
+ageandheight <- read.csv("ageandheight.csv") #Read the data
 lmHeight = lm(height~age, data = ageandheight) #Create the linear regression
 summary(lmHeight) #Review the results
 plot(ageandheight)
 ```
+Interpret the regression results. 
+
+1. What does the estimate mean?
+2. What us the p-value of the estimate? What does that represent?
+3. What is the R-squared? What does that represent?
+4. Is the regression line a good fit for this data?
 
 ```{r}
 plot(lmHeight)
 ```
+Review these additional regression summary figures. What does each tell us about the quality of our fit?
 
+#### Visualize with `ggplot2`
 
 ```{r}
 # Create a scatterplot of the data
@@ -386,10 +397,99 @@ scatter_plot +
   theme_minimal()
 ```
 
+What are the (aesthetic) differences between each produced plot? 
+
+#### Multivariable linear regression
 ```{r}
 lmHeight2 = lm(height~age + no_siblings, data = ageandheight) #Create a linear regression with two variables
 summary(lmHeight2) #Review the results
 ```
 
+What does the regression summary tell us?
+1. What does the estimate mean?
+2. What us the p-value of the estimate? What does that represent?
+3. What is the R-squared? What does that represent?
+4. Is the regression line a good fit for this data?
+
+Is one variable more predictive of height than the other? Which one? How do you know?
+
+## Revisiting linear regression
+Now we will perform a similar linear regression analysis using a more complex data set. The data is provided alongside this code. The following blank sections are included to help organize your analysis, but feel free to try out several combinations of variable predictors and add code blocks for each. This is meant to be a sandbox analysis. Proceed in any way you see fit.  
+
+**STUDY DESIGN:**
+
+We collect various measurements and predictors of cardiovascular disease risk from a cohort of *N=100* patients, including patients with and without Coronary Artery Disease (CAD). CAD is the most common type of heart disease in the United States and a leading cause of heart attack. Individuals with CAD have abnormal plaque buildup in the walls of the coronary arteries, which supply blood to the muscles of the heart. We are interested in identifying important predictors of CAD by assessing demographic, physiologic and genetic risk factors. For the latter, we determined the total number of CAD genetic risk variants for each patient by performing whole genome sequencing on blood samples obtained during the study visit and comparing with published genome wide association studies for CAD. 
 
 
+![CDC: Coronary Artery Disease](https://www.cdc.gov/heartdisease/images/coronary-artery-disease.jpg?_=80846)
+
+
+Our CAD data contains the following variables: 
+* Age: patient age
+
+* Systolic_BP: systolic blood pressure at study visit
+
+* Diastolic_BP: diastolic blood pressure at study visit
+
+* Total_Cholesterol: total cholesterol at study visit
+
+* HDL_Cholesterol: HDL cholesterol at study visit
+
+* LDL_Cholesterol: LDL cholesterol at study visit 
+
+* Diabetes: diabetes history (0 = not diabetic, 1 = diabetic)
+
+* Smoking: smoking history (0 = never smoker, 1 = former smoker, 2 = current smoker)
+
+* SumRiskVariants: total number of CAD genetic risk variants as determined by comparison with GWAS
+
+* CAD: coronary artery disease diagnosis (0 = healthy, 1 = CAD)
+
+**TIPS**
+
+Reference the last section for help with performing the regressions below. For each section, interpret the model summaries and record the estimate, p-values, and R-squared for each regression. 
+
+**Logistic regression example**
+If you plan to use non-continous varibles in your regressions, you will need to modify the previous section's code to perform a logistic regression. The following example shows a simple way to compute logistic regression. Feel free to modify this code for your analysis. 
+
+```{r}
+# Generate example data
+set.seed(123)
+n <- 100  # Number of data points
+x <- rnorm(n, mean = 0, sd = 1)  # Independent variable
+y <- rbinom(n, size = 1, prob = 1 / (1 + exp(-(-1 + 2 * x))))  # Simulated binary dependent variable
+
+# Create a data frame
+data <- data.frame(x = x, y = as.factor(y))
+
+# Fit a logistic regression model
+model <- glm(y ~ x, data = data, family = binomial)
+
+# print summary stats
+summary(model)
+```
+
+
+#### Simple linear regression
+
+```{r}
+cardio_data <- read.csv("CAD.csv") #Read the data
+head(cardio_data)
+```
+
+```{r}
+###### YOUR CODE HERE ######
+``` 
+
+#### Visualize with `ggplot2`
+
+```{r}
+###### YOUR CODE HERE ######
+``` 
+
+#### Multivariable linear regression
+**Main Question:** Which factors are most important for predicting CAD risk? What are their effect sizes (i.e. estimates)?
+
+```{r}
+###### YOUR CODE HERE ######
+```
