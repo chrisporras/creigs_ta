@@ -1,0 +1,181 @@
+---
+title: "Kennewick PCA"
+author: "Christian Porras"
+date: "2023-10-17"
+output: html_document
+---
+
+# Ancestry inference PCA
+
+## Visualizing genetic relatedness
+
+```{r}
+package_names <- c("tidyverse","plotly","ggplot2")
+
+# load packages, install them first if not installed
+for (package_name in package_names){
+  if (!requireNamespace(package_name, quietly = TRUE)) {
+    install.packages(package_name)
+  }
+  
+  library(package_name, character.only = TRUE)
+
+  }
+```
+
+```{r}
+### Load in data files
+# check working directory 
+setwd("~/Desktop/creigs_ta_2023/kennewick-pca")
+
+df = read_csv('data/1K_genomes_PCA.csv')
+PC_load = read_csv('data/1kGenomesPCloading.csv')
+superpop_key = read_tsv("data/20131219.superpopulations.tsv")
+populations = read_tsv('data/20131219.populations.tsv')
+pop_key = populations[,1:3]
+```
+
+### Glimpse at the data set we'll be studying
+```{r}
+glimpse(df)
+```
+> We want to infer the population that our first sample was chosen from by comparing genetic data across a global sample from the [1000 Genomes Project](https://en.wikipedia.org/wiki/1000_Genomes_Project).
+
+
+### Unlabeled PCA plot
+```{r}
+pc1 = round(PC_load$loading[1]*100)
+pc2 = round(PC_load$loading[2]*100)
+
+plot(df$PC1_0.03008,
+     df$PC2_0.01143,
+     main = '1K Genomes test PCA plot',
+     xlab = paste("PC1 ",pc1,"% variance explained"),
+     ylab = paste("PC2 ",pc2,"% variance explained")
+     )
+
+```
+
+> We can plot the first two principal components for each sample, but this doesn't tell us much without labels!
+
+```{r}
+################# Legend key for Population codes #################
+superpop_key
+```
+
+### Label PCA plot by super population
+
+```{r}
+library(ggplot2)
+
+pc1 = round(PC_load$loading[1]*100)
+pc2 = round(PC_load$loading[2]*100)
+
+# Set up the plot
+ggplot(data = df, aes(x = PC1_0.03008, y = PC2_0.01143)) +
+  geom_point(aes(color = `Super_Population`), size = 4, alpha = 0.2) +
+  geom_point(data = subset(df, Super_Population == 'UNKNOWN'), color = 'black', size = 4, shape = 15) +
+  scale_color_discrete(name = 'Super Population') +
+  labs(
+    title = '1K Genomes PCA by super population',
+    x = paste("PC1 ",pc1,"% variance explained"),
+    y = paste("PC2 ",pc2,"% variance explained")
+  ) +
+  theme_minimal() +
+  theme(legend.position = 'right') +
+  theme(legend.text = element_text(size = 18)) +
+  guides(color = guide_legend(override.aes = list(size = 5))
+  )
+
+```
+
+> Now we're getting somewhere! Still, we can use another dimension to better view our unknown.
+
+```{r}
+pc1 = round(PC_load$loading[1]*100)
+pc2 = round(PC_load$loading[2]*100)
+pc3 = round(PC_load$loading[3]*100)
+
+# Create the ggplot plots for each PC combination
+plot1 <- ggplot(data = df, aes(x = PC1_0.03008, y = PC2_0.01143)) +
+  geom_point(aes(color = `Super_Population`), size = 4, alpha = 0.2) +
+  geom_point(data = subset(df, Super_Population == 'UNKNOWN'), color = 'black', size = 4, shape = 15) +
+  scale_color_discrete(name = 'Super Population') +
+  labs(
+    title = 'PC1 vs PC2',
+    x = paste("PC1 ",pc1,"% variance explained"),
+    y = paste("PC2 ",pc2,"% variance explained")
+  ) +
+  theme_minimal() +
+  theme(legend.position = 'right') +
+  theme(legend.text = element_text(size = 18)) +
+  guides(color = guide_legend(override.aes = list(size = 5))
+  )
+
+plot2 <- ggplot(data = df, aes(x = PC1_0.03008, y = PC3_0.00354)) +
+  geom_point(aes(color = `Super_Population`), size = 4, alpha = 0.2) +
+  geom_point(data = subset(df, Super_Population == 'UNKNOWN'), color = 'black', size = 4, shape = 15) +
+  scale_color_discrete(name = 'Super Population') +
+  labs(
+    title = 'PC1 vs PC3',
+    x = paste("PC1 ",pc1,"% variance explained"),
+    y = paste("PC3 ",pc3,"% variance explained")
+  ) +
+  theme_minimal() +
+  theme(legend.position = 'right') +
+  theme(legend.text = element_text(size = 18)) +
+  guides(color = guide_legend(override.aes = list(size = 5))
+  )
+
+plot3 <- ggplot(data = df, aes(x = PC2_0.01143, y = PC3_0.00354)) +
+  geom_point(aes(color = `Super_Population`), size = 4, alpha = 0.2) +
+  geom_point(data = subset(df, Super_Population == 'UNKNOWN'), color = 'black', size = 4, shape = 15) +
+  scale_color_discrete(name = 'Super Population') +
+  labs(
+    title = 'PC2 vs PC3',
+    x = paste("PC2 ",pc2,"% variance explained"),
+    y = paste("PC3 ",pc3,"% variance explained")
+  ) +
+  theme_minimal() +
+  theme(legend.position = 'right') +
+  theme(legend.text = element_text(size = 18)) +
+  guides(color = guide_legend(override.aes = list(size = 5))
+  )
+
+plot1
+plot2
+plot3
+```
+> If only we could plot in 3D and rotate our plot around to see different angles...
+
+```{r}
+################ Legend key describing sub population codes ################
+pop_key
+```
+
+
+```{r}
+library(plotly)
+
+plot_ly(df, x = ~PC1_0.03008, 
+        y = ~PC2_0.01143, 
+        z = ~PC3_0.00354, 
+        color = ~Super_Population, type = "scatter3d")
+
+```
+
+> Try hiding various combinations of subpopulations to identify which of these cluster most closely to our unknown. 
+
+```{r}
+library(plotly)
+
+plot_ly(df, x = ~PC1_0.03008, 
+        y = ~PC2_0.01143, 
+        z = ~PC3_0.00354, 
+        color = ~Super_Population, 
+        symbol = ~Population,
+        type = "scatter3d")
+
+```
+
+Which ancestry group is our unknown sample most similar to in PCA?
